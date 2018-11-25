@@ -1,0 +1,78 @@
+<script src="..\my-jsArrayMethods\simpletest.js"></script>
+<script>
+
+// The filter() method creates a new array with all elements that pass the test implemented by the provided function.
+
+// Parameters:
+    // Callback: Function is a predicate, to test each element of the array. Return true to keep the element, false otherwise
+    // Takes three arguments:
+        // Element: The current element being processed in the array.
+        // Index (Optional): The index of the current element being processed in the array.
+        // Array (Optional): The array filter was called upon.
+    // This Arg (Optional): Value to use as this when executing callback.
+// Return value: A new array with the elements that pass the test. If no elements pass the test, an empty array will be returned.
+
+function myFilter(originalArray, callback, optionalThis) {
+    for (i = 0; i < originalArray.length; i ++) {
+        if (optionalThis) {
+            callback = callback.bind(optionalThis);
+        }
+        var filteredArray = [];
+        for (var i = 0; i < originalArray.length; i ++) {
+            // if (boundCallback(originalArray[i], i, originalArray)) {
+                if (callback(originalArray[i], i, originalArray)) {
+                filteredArray.push(originalArray[i]);
+            }
+        }
+        return filteredArray;
+    }
+};
+
+tests({
+ 	'It should run a callback function originalArray.length times.': function() {
+         var callbackCounter = 0;
+         myFilter([1, 2, 3], function() {
+            callbackCounter ++;
+         });
+         eq(callbackCounter, 3);
+     },
+    'It should pass in the ith el as the first argument to callback.': function() {
+        myFilter([1], function (el) {
+            eq(el, 1);
+        });
+    },
+    'It should pass in the index of current el being processed as optional second arg in callback. ': function() {
+        myFilter([1], function(el, index) {
+            eq(0, index);
+        });
+    },
+    'It should pass in the originalArray as optional third arg in callback.': function() {
+        var testArray = [1, 2, 3];
+        myFilter(testArray, function(el, index, originalArray) {
+            eq(testArray, originalArray)
+        });
+    },
+    'It should accept an optional this object.': function() {
+        myFilter([1], function() {
+            eq(this.name, 'filterTest');
+        }, {name: 'filterTest'});
+    },
+    'It should return an array.': function() {
+        var testArray = [1, 2, 3];
+        var filteredArray = myFilter(testArray, function() {});
+        eq(Array.isArray(filteredArray), true);
+    },
+    'It should return a new array, not the array being filtered.': function() {
+        var testArray = [1, 2, 3];
+        var filteredArray = myFilter(testArray, function() {});
+        eq(testArray === filteredArray, false);
+    },
+    'It should return a new array that only has elements where callback() is true.': function() {
+        var filteredArray = myFilter([1, 2], function(el) {
+            return el > 1;
+        });
+        eq(filteredArray.length, 1);
+        eq(filteredArray[0], 2);
+    },
+});
+</script>

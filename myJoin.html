@@ -1,0 +1,77 @@
+<script src="..\my-jsArrayMethods\simpletest.js"></script>
+<script>
+  // The join() method joins all elements of an array (or an array-like object) into a string and returns this string.
+  // Parameters
+    // separator (Optional)
+      // Specifies a string to separate each pair of adjacent elements of the array. 
+      // The separator is converted to a string if necessary. => VERY CONFUSING LINE FROM DOCS.
+        // numbers and are converted to strings.
+        // null and NaN convert to strings
+        // letters and symbols throw an error if not previously defined.
+        // undefined defaults to a comma.
+      // If omitted, the array elements are separated with a comma (","). 
+      // If separator is an empty string, all elements are joined without any characters in between them.
+  // Return value
+    // A string with all array elements joined. If arr.length is 0, the empty string is returned.
+
+  // Notes:
+    // If an element is undefined or null, it is converted to the empty string.
+  
+  function myJoin(array, separator) {
+    var returnValue = '';
+    if (array.length === 0) {
+      return returnValue;
+    }
+    for (var i = 0; i < array.length; i++) {
+      var originalEl = array[i];
+      if (originalEl === undefined || originalEl === null) {
+        originalEl = '';
+      }
+
+      var stringEl = originalEl.toString();
+
+      if ((arguments.length < 2 || arguments[1] === undefined) && i < array.length - 1) {
+        stringEl = stringEl + ',';
+      }
+      if (arguments.length === 2 && i < array.length - 1) {
+        stringEl = stringEl + separator;
+      }
+      returnValue += stringEl;
+    }
+    return returnValue;
+  }
+
+  tests({
+    'It should return an empty string if passed an empty array.': function() {
+      var empty = myJoin([]);
+      eq(empty, '');
+    },
+    'It should default separator to a comma if not passed a separator.': function() {
+      var joined = myJoin(['Alex', 'Katie']);
+      eq(joined.charCodeAt(4), '44');
+    },
+    'It should separate string elements with the separator if provided.': function() {
+      var myArray = ['Alex', 'Katie'];
+      var joined = myJoin(myArray, ':');
+      eq(joined.charCodeAt(4), 58);
+    },
+    'It should use default comma if passed undefined as separator.': function() {
+      var joined = myJoin(['Alex', 'Katie'], undefined);
+      eq(joined.charCodeAt(4), '44');
+    },
+    'If separator is an empty string, all elements should be joined with no spaces.': function() {
+      var joined = myJoin(['Alex', 'Katie'], '');
+      eq(joined.charCodeAt(4), 75);
+    },
+    'It should convert undefined/null elements to an empty string.': function() {
+      var undefinedEls = myJoin([undefined, null]);
+      eq(myJoin(0), '');
+      eq(myJoin(1), '');
+    },
+    'If passed an array containing one comma (one hole), it should delete this trailing comma and return an empty string.': function() {
+      var myArray = [,];
+      var joined = myJoin(myArray);
+      eq(joined, '');
+    }
+  })
+</script>

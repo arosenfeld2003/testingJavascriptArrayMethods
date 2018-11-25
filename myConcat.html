@@ -1,0 +1,83 @@
+<script src="..\my-jsArrayMethods\simpletest.js"></script>
+<script>
+  // Standalone version of the native Array.prototype.concat() method.
+  // myConcat is used to merge two or more arrays. 
+  // myConcat does not change the existing arrays. 
+  // myConcat returns a new array.
+  // myConcat copies string, number and bool values into the new array.
+  // myConcat copies object references to the new array.
+    // if either referenced object is modified, it will affect both the new and original arrays.
+
+  function myConcat(arr1, arr2) {
+    const args = Array.from(arguments);
+     returnArr = [];
+
+    if (!Array.isArray(arguments[0])) {
+      throw new TypeError('The first parameter passed to myConcat must be an array.');
+    }
+    returnArr[0] = arguments[0];
+    for (var i = 1; i < args.length; i++) {
+      var el = args[i];
+      if (Array.isArray(el)) {
+        for (var j = 0; j < el.length; j++){
+          returnArr[returnArr.length] = el[j];
+        }
+      }
+    }
+    return returnArr;
+  }
+
+  tests({
+    'It should throw type error if first arg is not an array.': function() {
+      var isTypeError = false;
+      try {
+        var myObj = {name: 'Alex'};
+        myConcat(myObj, [1]);
+      } 
+      catch(e) {
+        isTypeError = (e instanceof TypeError);
+      }
+      eq(isTypeError, true);
+    },
+    'It should not modify the array arguments.': function() {
+      var arr1 = ['a'];
+      var arr2 = ['b'];
+      var concatArr = myConcat(arr1, arr2);
+      eq(arr1.length, 1);
+      eq(arr2.length, 1);
+      eq(concatArr.length, 2);
+    },
+    'It should copy all string/number/bool elements from array arguments into new array.': function() {
+      var arr1 = ['a'];
+      var arr2 = [1];
+      var arr3 = [true, false]
+      var concatArr = myConcat(arr1, arr2, arr3);
+      eq(concatArr[0], 'a');
+      eq(concatArr[1], 1);
+      eq(concatArr[2], true);
+      eq(concatArr[3], false);
+    },    
+    'It should copy references of nested objects in the array arguments.': function() {
+      var arr1 = [1];
+      var obj1 = {name: 'Alex'};
+      var arrNested = [arr1, obj1];
+      var arr2 = [2];
+      var concatArr = myConcat(arr2, arrNested);
+      eq(concatArr[0], 2);
+      eq(concatArr[1], arr1);
+      eq(concatArr[2], obj1);
+    },    
+    'Changes to argument objects should be visible on both new returned array and the original object.': function() {
+      var arr1 = [1];
+      var obj1 = {name: 'Alex'};
+      var arrNested = [arr1, obj1];
+      var arr2 = [2];
+      var concatArr = myConcat(arr2, arrNested);
+      eq(concatArr[2], obj1);
+      obj1.name = 'not Alex';
+      arr1[1] = 'not 1';
+      eq(concatArr[2].name, 'not Alex');
+      eq(concatArr[1].length, 2);
+    },    
+  })
+</script>

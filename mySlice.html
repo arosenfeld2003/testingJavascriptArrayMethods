@@ -1,0 +1,110 @@
+<script src="..\my-jsArrayMethods\simpletest.js"></script>
+<script>
+  // The slice() method returns a shallow copy of a portion of an array into a new array object.
+    // Slice is passed a beginning and end index for selecting the portion to be copied (end not included). 
+  // The original array will not be modified.
+
+  // Parameters for mySlice:
+    // Array to be sliced.
+
+    // begin (Optional)
+      // Zero-based index at which to begin extraction.
+      // A negative index can be used, indicating an offset from the end of the sequence. 
+        // e.g. slice(-2) extracts the last two elements in the sequence.
+      // If begin is undefined, slice begins from index 0.
+      // If begin is greater than the length of the sequence, an empty array is returned.
+
+    // end (Optional)
+      // Zero-based index before which to end extraction. Slice extracts up to but not including end.
+        // e.g. slice(1,4) extracts the second element through the fourth element (elements indexed 1, 2, and 3).
+      // A negative index can be used, indicating an offset from the end of the sequence. 
+        // e.g. slice(2,-1) extracts the third element through the second-to-last element in the sequence.
+      // If end is omitted, slice extracts through the end of the sequence (arr.length).
+      // If end is greater than the length of the sequence, slice extracts through to the end array (arr.length).
+  
+  // Return value
+    // A new array containing the extracted elements.
+  
+  function mySlice(arr, startSlice, endSlice) {
+    if (!Array.isArray(arr) && arr.length === undefined) {
+      throw new TypeError('mySlice must be passed an array or array-like object.')
+    }
+    var slicedArr = [];
+    if (startSlice > arr.length) {
+      return undefined;
+    }
+    var startIndex = startSlice || 0;
+    var endIndex = endSlice || arr.length;
+    for (var i = startIndex; i < endIndex; i++) {
+      slicedArr[slicedArr.length] = arr[i];
+    }
+    return slicedArr;
+  }
+
+  tests({
+    'It should return a new array.': function() {
+      var myArr = [];
+      var slicedArr = mySlice(myArr);
+      eq((myArr !== slicedArr), true);
+    },
+    'It should not alter the original array.': function() {
+      var myArr = [1];
+      var slicedArr = mySlice(myArr);
+      eq(myArr[0], 1);
+    },
+    'It should return undefined if startSlice is greater than array.length.': function() {
+      eq(mySlice([1, 2], 3), undefined);
+    },
+    'If no start or end index, it should slice entire array into a new array.': function() {
+      var myArr = [1];
+      var slicedArr = mySlice(myArr);
+      eq(myArr.length, slicedArr.length);
+      eq(myArr[0], slicedArr[0]);
+    },
+    'If starting index, returnArray[0] should equal originalArray[startingIndex].': function() {
+      var myArr = [1, 2];
+      var slicedArr = mySlice(myArr, 1);
+      eq(slicedArr[0], 2);
+    },
+    'If ending index, final index of returnArray should equal originalArray[endIndex - 1].': function() {
+      var myArr = [1, 2, 3, 4, 5];
+      var slicedArr = mySlice(myArr, 1, 3);
+      eq(slicedArr[1], 3);
+      eq(slicedArr[3], undefined);
+    },
+    'It should work on an array-like object.': function() {
+      var mySliceArgs = function(arg1, arg2, arg3) {
+        return mySlice(arguments, 1);
+      }
+      var slicedArgs = mySliceArgs(1, 2, 3);
+      eq(slicedArgs[0], 2);
+      eq(slicedArgs[1], 3);
+    },
+    'It should throw type error if not passed an array or array-like object.': function() {
+      var isTypeError = false;
+      try {
+        mySlice({name: 'Alex'});
+      }
+      catch(e) {
+        isTypeError = (e instanceof TypeError);
+      }
+      eq(isTypeError, true);
+    }
+  })
+  
+  // Notes:
+  // Slice does not alter the original array. It returns a shallow copy of elements from the original array. 
+  // Elements of the original array are copied into the returned array as follows:
+    // For object references (and not the actual object), slice copies object references into the new array. 
+      // Both the original and new array refer to the same object. 
+        // If a referenced object changes, the changes are visible to both the new and original arrays.
+    // For strings, numbers and booleans (not String, Number and Boolean objects), slice copies the values into the new array. 
+      // Changes to the string, number or boolean in one array do not affect the other array.
+    // If a new element is added to either array, the other array is not affected.
+    
+    // Slice method can also be called to convert Array-like objects / collections to a new Array. 
+      // for [].prototype.slice, it would be necessary to bind the method to the object. 
+    // mySlice can be passed an array-like object (e.g. arguments from a function).
+      // mySlice will return a new array containing the elements from passed-in object. 
+
+</script>

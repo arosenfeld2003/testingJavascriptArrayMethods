@@ -1,0 +1,75 @@
+c<script src="..\my-jsArrayMethods\simpletest.js"></script>
+<script>
+  // The includes() method determines whether an array includes a certain element, returning true or false as appropriate.
+  // myIncludes is a standalone version of native version; it will not change Array.prototype.includes.
+  // myIncludes takes args of of an array (or array-like object), search element, and optionalSearchIndex.
+    // myIncludes will throw type error if the first argument passed is not an array or an object with a length property.
+    // If optionalSearhIndex is negative, the search will start from computed index of (array.length + optionalSearchIndex).
+      // If the computed index is less than 0, the entire array will be searched.
+  // myIncludes returns true if the element is found, false if it is not.
+  // myIncludes considers all values of 0 to be equal.
+  // myIncludes considers false != 0.
+
+  function myIncludes(arr, el, optionalSearchIndex) {
+    var searched = false;
+    if (!arr.length) {
+      throw new TypeError('myIncludes must be passed an array or an array-like object as first arg.')
+    }
+    if (optionalSearchIndex > arr.length) {
+      return false;
+    }
+    var computedSearchIndex = optionalSearchIndex || 0;
+    if (optionalSearchIndex < 0) {
+      computedSearchIndex = arr.length + optionalSearchIndex;
+    }
+    for (var i = computedSearchIndex; i < arr.length; i++) {
+      if (typeof arr[i] === 'number') {
+        if (Number.isNaN(arr[i]) && Number.isNaN(el)) {
+          searched = true;
+        }
+      }
+      if (arr[i] === el) {
+        searched = true;
+      }
+    }
+    return searched;
+  }
+
+  tests({
+    'It should throw type error if first arg passed in is not an array.': function() {
+      var isTypeError = false;
+      try {
+        myIncludes(1, 2);
+      }
+      catch(e) {
+        isTypeError = (e instanceof TypeError);
+      }
+      eq(isTypeError, true);
+    },
+    'It should return false if search index is greater than arr.length.': function() {
+      eq(myIncludes([1], 1, 2), false);
+    },
+    'If no search index, it should return true if el is in array and false if it is not.': function() {
+      eq(myIncludes([1, 2, 3], 2), true);
+      eq(myIncludes([1, 2, 3], 4), false);
+    },
+    'If search index, it should begin array interation from search index.': function() {
+      eq(myIncludes([1, 2, 3], 2, 4), false);
+      eq(myIncludes([1, 2, 3], 2, 1), true);
+    },
+    'If passed negative search index, it should start at computed index (searchIndex + array.length).': function() {
+      eq(myIncludes([1, 2, 3], 1, -1), false);
+    },
+    'It should be generic and work with an array-like object': function() {
+      var test = function() {
+        return myIncludes(arguments, 'something');
+      }
+      eq(test('something'), true);
+      eq(test('another thing'), false);
+    },
+    'It should return true if array contains NaN and searchEl is NaN.': function() {
+      var myArray = [NaN];
+      eq(myIncludes(myArray, NaN), true);
+    }
+  })
+</script>

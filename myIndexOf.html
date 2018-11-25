@@ -1,0 +1,128 @@
+<script src="..\my-jsArrayMethods\simpletest.js"></script>
+<script>
+    // Notes from MDN Docs:
+    // The indexOf() method returns the first index at which a given element can be found in the array.
+        // It returns -1 if index is not present.
+   
+        // Parameters
+        // searchElement
+            // Element to locate in the array.
+        // fromIndex Optional
+            // The index to start the search at. 
+                // If the index is greater than or equal to the array's length, -1 is returned...
+                    // The array will not be searched. 
+                // If the provided index value is a negative number, it is taken as the offset from the end of the array. 
+                    // Note: if the calculated index is negative, the array is still searched from front to back 
+                    // (Default: 0  >>> entire array is searched).    
+        // Return value
+            // The first index of the element in the array; -1 if not found.
+            
+    // Additional Note:
+    // indexOf() compares searchElement to elements of the Array using strict equality (===).
+
+function myIndexOf(array, searchEl, optionalIndex) {
+    if (!Array.isArray(array)) {
+        throw new TypeError('myIndexOf must be passed an array.')
+    }
+    var searchIndex = 0;
+    // if passed an array with no searchEl, return -1;
+    if (arguments.length < 2 || searchEl === undefined) {
+        return -1;
+    }
+    if (optionalIndex) {
+        if (optionalIndex >= array.length) {
+            return -1;
+        }
+        // 'If optionalIndex is a negative number, offset from array.length and begin search.'
+            // In order to 'offset' from the array, add the negative value to array.length.
+        if (optionalIndex < 0) {
+            optionalIndex = array.length + optionalIndex;
+        }
+        searchIndex  = optionalIndex;
+    }
+    if (array.length === 0) {
+        return -1;
+    }
+    for (i = searchIndex; i < array.length; i++) {
+        if (i === (array.length - 1) && array[i] !== searchEl) {
+            return -1;
+        }
+        if (array[i] === searchEl) {
+            return i;
+        }
+    }
+};
+tests({
+    'If not passed an array, throw type error.': function() {
+        var isTypeError = false;
+        try {
+            myIndexOf({});
+        } catch(e) {
+            isTypeError = (e instanceof TypeError);
+        }
+        eq(isTypeError, true);
+    },
+    'If optionalIndex is greater than or equal to searchArray.length, it should return -1 without searching array.': function() {
+        var searchArray = ['A', 'B', 'C'];
+        var returnIndex = myIndexOf(searchArray, 'A', 3);
+        var returnIndexD = myIndexOf(searchArray, 'D', 4);
+        eq(returnIndex, -1);
+        eq(returnIndexD, -1);
+    },
+    'If optionalIndex, it should return -1 if index of searchEl is less than optionalIndex.': function() {
+        var searchArray = ['A', 'B', 'C'];
+        eq(myIndexOf(searchArray, 'A', 2), -1);
+        eq(myIndexOf(searchArray, 'B', 2), -1);
+    },
+    'If no optionalIndex, it should start searching from array[0].': function() {
+        var searchArray = ['A', 'B', 'C'];
+        eq(myIndexOf(searchArray, 'A'), 0);
+    },
+    'It should return -1 if searchEl is not in array.': function() {
+        var searchArray = ['A', 'B', 'C', 'C', 'B', 'A'];
+        eq(myIndexOf(searchArray, 'D'), -1);
+    },
+    'If no optionalIndex, it should return first index of searchEl in array.': function() {
+        var searchArray = ['A', 'B', 'C', 'C', 'B', 'A'];
+        var returnIndexA = myIndexOf(searchArray, 'A');
+        var returnIndexB = myIndexOf(searchArray, 'B');
+        var returnIndexC = myIndexOf(searchArray, 'C');
+        eq(returnIndexA, 0);
+        eq(returnIndexB, 1);
+        eq(returnIndexC, 2);
+    },
+    'If optionalIndex, it should start search at array[optionalIndex].': function() {
+        var searchArray = ['A', 'B', 'A'];
+        eq(myIndexOf(searchArray, 'A', 1), 2);
+    },
+    'It should return first index of searchEl >= optionalIndex.': function() {
+        var searchArray = ['A', 'B', 'C', 'C', 'B', 'A'];
+        var returnIndexA = myIndexOf(searchArray, 'A', 3);
+        var returnIndexB = myIndexOf(searchArray, 'B', 3);
+        var returnIndexC = myIndexOf(searchArray, 'C', 3);
+        eq(returnIndexA, 5);
+        eq(returnIndexB, 4);
+        eq(returnIndexC, 3);
+    },
+    'If provided optionalIndex is a negative, subtract from array.length and use value for searchIndex.': function() {
+        var searchArray = [1, 2, 1, 4, 1, 6];
+        eq(myIndexOf(searchArray, 1, -1), -1);
+        eq(myIndexOf(searchArray, 1, -2), 4);
+        eq(myIndexOf(searchArray, 1, -4), 2);
+        eq(myIndexOf(searchArray, 1, -6), 0);
+    },
+    'If calculated searchIndex is negative, entire array should still be searched.': function() {
+        var searchArray = [1, 2, 1, 4, 1, 6];
+        eq(myIndexOf(searchArray, 6, -8), 5);
+    },
+    'It should not run if passed an array full of holes and undefined searchEl.': function() {
+        var searchArray = [,,,];
+        var indexOfHoles = myIndexOf(searchArray, undefined);
+        eq(indexOfHoles, -1);
+    },
+    'It should return -1 if passed an empty array and no searchEl.': function() {
+        var searchArray = [];
+        eq(myIndexOf(searchArray), -1);
+    }
+});
+</script>

@@ -1,0 +1,139 @@
+<script src="..\my-jsArrayMethods\simpletest.js"></script>
+<script>
+  // The some() method tests whether at least one element in the array passes the test implemented by the provided function.
+    // Note: This method returns false for any condition put on an empty array.
+    // Parameters:
+      // callback
+        // Function to test for each element, taking three arguments:
+          // currentValue
+            // The current element being processed in the array.
+          // index Optional
+            // The index of the current element being processed in the array.
+          // arrayOptional
+            // The array some() was called upon.
+      // thisArgOptional
+        // Value to use as this when executing callback.
+    // Return Value
+      // true if the callback function returns a truthy value for any array element; otherwise, false.
+  
+  function mySome(array, callback, optionalThis) {
+    'use strict';
+    if (!Array.isArray(array)) {
+      throw new TypeError('mySome must be passed an array');
+    }
+    if (typeof callback !== 'function') {
+      throw new TypeError('mySome must be passed a callback function');
+    }
+
+    if (optionalThis) {
+      callback = callback.bind(optionalThis);
+    }
+
+    for (var i = 0; i < array.length; i++) { 
+      if (i in array && callback.call(optionalThis, array[i], i, array)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  tests({
+  'It should throw type error if not passed an array as first parameter. ': function() {
+    var isTypeError = false;
+    try {
+      mySome('not an array');
+    } catch(e) {
+      isTypeError = (e instanceof TypeError);
+    }
+    eq(isTypeError, true);
+  },
+  'It should throw type error if callback is not a function.': function() {
+    var isTypeError = false;
+    try {
+      mySome([1, 2, 3], 'not a function');
+    } catch(e) {
+      isTypeError = (e instanceof TypeError);
+    }
+    eq(isTypeError, true);
+  },
+  'It should not mutate the original array.': function() {
+    var myArray = [1, 2, 3];
+    function isEven(el) {
+      return el % 2 === 0;
+    }
+    mySome(myArray, isEven);
+    eq(myArray.length, 3);
+    eq(myArray[0], 1);
+    eq(myArray[1], 2);
+    eq(myArray[2], 3);
+  },
+  'It should return false if passed an empty array.': function() {
+    function callback() {};
+    eq(mySome([], callback), false);
+  },
+  'Callback should have access to the current el being evaluated. ': function() {
+    var myArray = ['Alex'];
+    mySome(myArray, function(el) {
+      for (var i = 0; i < myArray.length; i++) {
+        eq(el, 'Alex');
+      }
+    })
+  },
+  'Callback should accept an optional index argument. ': function() {
+    var myArray = ['Alex'];
+    mySome(myArray, function(el, index) {
+      for (var i = 0; i < myArray.length; i++) {
+        eq(index, 0);
+      }
+    });
+  },
+  'Callback should accept an optional argument providing access to the calling array.': function() {
+    var myArray = ['Alex'];
+    mySome(myArray, function(el, index, array) {
+      eq(array, myArray);
+    });
+  },
+  'If optionalThis, callback\'s this value should be bound.': function() {
+    var myArray = [1, 2, 3];
+    var myObj = {name: 'Alex'};
+    mySome(myArray, function isEven(el, index, array) {
+      eq(this.name, 'Alex');
+    }, myObj);
+  },
+  'If no optionalThis, callback\'s this value should default to undefined. ': function() {
+    var myArray = [1, 2, 3];
+    mySome(myArray, function(el, index, array) {
+      'use strict';
+      eq(this, undefined);
+    });
+  },
+  'It should not run callback on holes in the array. ': function() {
+    var myArray = [1, 2, , 4, , 6];
+    mySome(myArray, function(el, index, array) {
+      var callbackCounter = 0;
+      for (var i = 0; i < myArray.length; i++) {
+        if (i in myArray) {
+          callbackCounter ++;
+        }
+      }
+      eq(callbackCounter, 4);
+    })
+  },
+  'It should run callback until an element passes test defined in callback, then immediately return true.': function() {
+    var myArray = [1, 2, 3];
+    var callbackCounter = 0;
+    mySome(myArray, function(el) {
+      callbackCounter++;
+      return el === 2;
+    })
+    eq(callbackCounter, 2);
+  },
+  'It should return false if no element passes test defined in callback. ': function() {
+    var myArray = [1, 2, 3];
+    var testSome  = mySome(myArray, function(el) {
+      return el > 3;
+    })
+    eq(testSome, false);
+  }
+})
+</script>

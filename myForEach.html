@@ -1,0 +1,69 @@
+<script src="..\my-jsArrayMethods\simpletest.js"></script>
+<script>
+	// my version of the native forEach method.
+	// does not overwrite Array.prototype.forEach.
+	
+	function myForEach(originalArray, callback, optionalThisObject) {
+		// var boundCallback = callback;
+		if (optionalThisObject) {
+			// boundCallback = callback.bind(optionalThisObject);
+			callback = callback.bind(optionalThisObject);
+		};
+		for (var i = 0; i < originalArray.length; i ++) {
+			// boundCallback(originalArray[i], i, originalArray);
+			callback(originalArray[i], i, originalArray);
+		}
+	};
+	tests({
+		'It should run callback function originalArray.length times.': function() {
+			var numberOfTimesCallbackHasRun = 0;
+			myForEach([1, 2, 3], function() {
+				numberOfTimesCallbackHasRun ++;
+			});
+			eq(numberOfTimesCallbackHasRun, 3);
+		},
+		'It should return undefined.': function() {
+			var newArray = myForEach([1, 2, 3], function(){});
+			eq(newArray, undefined) 
+		},
+		'It should pass in the ith element in originalArray as first argument to callback.': function() {
+			myForEach([1], function(number) {
+				eq(1, number);
+			});
+		},
+		'It should pass in the index of each postiion in originalArray as second argument to callback.': function() {
+			myForEach([1], function(number, index) {
+				eq(0, index);
+			});
+		},
+		'It should pass in originalArray as third argument to callback.': function() {
+			var testArray = [1, 2, 3];
+			myForEach(testArray, function(number, index, originalArray) {
+				eq(testArray, originalArray);
+			});
+		},
+		'It should accept an optional this object.': function() {
+			myForEach([1], function() {
+				eq(this.description, 'I am an optional this object inside the callback.');
+			}, {description: 'I am an optional this object inside the callback.'});
+		},
+		'It should not change originalArray.': function() {		
+			var originalArray = [1];
+			var testArray = [];
+			myForEach(originalArray, function(num) {
+				testArray.push(num + 1);
+				eq(testArray[0], 2); 
+			});
+			eq(originalArray[0], 1);
+		},
+		'It should not access index properties that are deleted or unitialized (eg sparse arrays: undefined props).': function() {
+			var originalArray = [1, 2, 3];
+			myForEach(originalArray, function(num) {
+				if (num === 1) {
+					originalArray.shift();
+				}
+			}); 
+			eq(originalArray[1], 3); // 2 should now be removed from the array; the second element === 3.
+		},
+	});
+</script>

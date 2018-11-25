@@ -1,0 +1,93 @@
+<script src="..\my-jsArrayMethods\simpletest.js"></script>
+<script>
+  // The push() method adds one or more elements to the end of an array and returns the new length of the array.
+  
+  // Notes:
+  // myPush is a standalone function built to replicate the native Array.prototype.push method.
+  // myPush is not intended to overwrite the native Push.
+  // myPush adds one or more elements to the end of an array and returns the new length of the array.
+  // myPush will throw an error if the first argument is not an array or object.
+  // myPush will also work when passed an object, based on the generic nature of native push method.
+    // Unlike native Push which only updates length property, myPush will actually push an element into an object.
+  // When merging two arrays, myPush will not modify the second passed in array.
+
+  function myPush(obj, elements) {
+    const args = Array.from(arguments);
+    // pushed = obj; args = elements to be pushed
+    var pushed = args.shift(); 
+    var isObject = typeof pushed;
+    if (isObject !== 'object') {
+      throw new TypeError('myPush must be passed an object as first argument.');
+    }
+    if (pushed.length === undefined) {
+      var pushedLen = Object.keys(pushed).length;
+      pushed.length = pushedLen;
+    }
+    // If passed only 1 arg, return arg.length.
+    if (args.length === 0) {
+      return pushed.length;
+    }
+    for (var i = 0; i < args.length; i++) {
+      // if pushing an array into another array, arrays should be merged into one array.
+      if(Array.isArray(pushed) && Array.isArray(args[i])) {
+        var arrayArg = args[i];
+        for (var i = 0; i < arrayArg.length; i++) {
+          pushed[pushed.length] = arrayArg[i];
+        }
+      } else {
+        pushed[pushed.length] = args[i];
+      }
+    }  
+    // update length of object if not array.
+    if(!Array.isArray(pushed)) {
+      pushed.length += args.length; 
+    }
+    return pushed.length;
+  }
+
+  tests({
+    'It should throw an error if first paramater is not an object.': function() {
+      var isTypeError = false;
+      try {
+        myPush('not an object');
+      }
+      catch(e) {
+        isTypeError = (e instanceof TypeError);
+      }
+      eq(isTypeError, true);
+    },
+    'If first arg is an empty array, it should push all elements into the array': function() {
+      eq(myPush([], 'a', 'b', 'c'), 3)
+    },
+    'If first arg is array, it should append all subsequent args to the end of that array.': function() {
+      var array = ['first el'];
+      myPush(array, 'second el');
+      eq(array[1], 'second el');
+    },
+    'It should increment the .length property of passed in array and return the new length.': function() {
+      var array = ['first el'];
+      var pushedArr = myPush(array, 'second el', 5);
+      eq(pushedArr, 3);
+    },
+    'It should work when passed an object that is not an array.': function() {
+      var pushedToObj = myPush({}, 'an item');
+      eq(pushedToObj, 1); 
+    },
+    'It should work on an object (not an array) when pushing multiple elements.': function() {
+      var pushedToObj = myPush({}, 'an item', 2, 'a third item');
+      eq(pushedToObj, 3);
+    },
+    'It should append elements to a passed in object after any existing properties.': function() {
+      var myObject = {FirstProp: 'stuff', SecondProp: 'other stuff'};
+      myPush(myObject, 'more stuff');
+      eq(myObject[2], 'more stuff');
+    },
+    'If passed only two arrays, it should merge the arrays.': function() {
+      var myArray = ['a'];
+      var pushedElement = ['b'];
+      var pushed = myPush(myArray, pushedElement);
+      eq(myArray[1], pushedElement);
+      eq(pushed, 2);
+    }
+  })
+</script>

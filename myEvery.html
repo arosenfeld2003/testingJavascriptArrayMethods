@@ -1,0 +1,103 @@
+<script src="..\my-jsArrayMethods\simpletest.js"></script>
+<script>
+  // The every() method tests whether all elements in the array... 
+  // pass the test implemented by the provided function.
+
+  // Parameters:
+    // array
+    // callback, with three arguments...
+      // currentValue: the value being processed.
+      // index (otional): the index of current el being processed.
+      // array (optional): The array every was called upon.
+    // optionalThis
+      // The value to use as this when executing callback.
+  
+  // Return Value: Boolean
+    // true if callback returns a truthy value, otherwise false.
+  // Notes: 
+    // Returns true for any condition put on an empty array.
+    // Imediately returns false if an element returns false to callback.
+    // Returns true if all elements return true to callback.
+    // If optionalThis, used for callback's 'this' value.
+      // If no optionalThis, 'this' will be 'undefined' in callback.
+    // Does not mutate original array.
+
+    function myEvery(array, callback, optionalThis) {
+      var bool = true;
+
+      if (optionalThis) {
+        callback = callback.bind(optionalThis);
+      }
+      if (array.length === 0) {
+        return bool;
+      }
+      for (var i = 0; i < array.length; i++) {
+        bool = callback(array[i], i, array);
+        if (bool === false) {
+          return bool;
+        }
+      }
+      return bool;
+    }
+
+  tests({
+    'It should return true if passed an empty array regardless of callback.': function() {
+      var myArray = [];
+      var test = myEvery(myArray, function(el) {
+        return el * 999999;
+      });
+      eq(test, true);
+    },
+    'Callback should have access to the current array value being processed.': function() {
+      var test = myEvery([1], function(el) {
+        return el === 1;
+      }) 
+      eq(test, true);
+    },
+    'Callback should have access to the index of current array value being processed.': function() {
+      var test = myEvery([1], function(el, index) {
+        return index === 0;
+      }) 
+      eq(test, true);
+    },
+    'Callback should have access to the array parameter.': function() {
+      var myArray = [1];
+      var test = myEvery(myArray, function(el, index, array) {
+        return array === myArray;
+      }) 
+      eq(test, true);
+    },
+    'It should immediately return false if an array el does not pass callback.': function() {
+      var callbackCounter = 0;
+      var myArray = [1, 2, 3];
+      var test = myEvery(myArray, function(el) {
+        callbackCounter ++;
+        return el === 2;
+      })
+      eq(callbackCounter, 1);
+    },
+    'It should bind optionalThis to callback if provided.': function() {
+      myEvery([1], function() {
+        eq(this.optionalThis, 'this');
+      }, {optionalThis: 'this'});
+    },
+    'It should not mutate originalArray': function() {
+      var myArray = [1];
+      myEvery(myArray, function(el) {
+        return el > 4;
+      });
+      eq(myArray[0], 1);
+    },
+    'It should throw an error is callback is not a function.': function() {
+      var isTypeError = false;
+      try{
+        myEvery([1, 2, 3], 'not a function');
+      }
+      catch(e) {
+        isTypeError = (e instanceof TypeError);
+      }
+      eq(isTypeError, true);
+    },
+  })
+
+</script>

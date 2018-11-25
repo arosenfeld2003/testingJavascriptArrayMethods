@@ -1,0 +1,180 @@
+<script src="..\my-jsArrayMethods\simpletest.js"></script>
+<script>
+  // The find() method returns the value of the first element in the array that satisfies the provided testing function. 
+  //Otherwise undefined is returned.
+
+  // Syntax
+
+  // arr.find(callback[, thisArg])
+
+  // Parameters
+
+  // callback
+  // Function to execute on each value in the array, taking three arguments:
+  // element
+  // The current element being processed in the array.
+  // indexOptional
+  // The index of the current element being processed in the array.
+  // arrayOptional
+  // The array find was called upon.
+
+  // thisArg Optional
+  // Object to use as this when executing callback.
+
+  // Return value
+  // The value of the first element in the array that satisfies the provided testing function; 
+  // otherwise, undefined is returned.
+
+  // Notes:
+  // Callback should run once for each index in the array until an element passes (returns true).
+  // If an element passes callback, myFind immediately returns the element.
+  // If no elements pass callback, myFind returns undefined.
+  // Callback should still run on empty indexes (sparse arrays).
+
+  // If no optionalThis, this === undefined.
+
+  // myFind does not mutate the array on which it is called.
+
+  // if callback mutates the array, myFind should still visit all elements.
+  // this inlcludes deleted elements of the array.
+
+  // if called on an array with nested elements (eg => [['nested]] ), myFind does not recursively unwrap...
+  // if the intent is to return the string 'nested', callback would need to unwrap the array.
+
+  // Notes on callback behavior:
+  // Callback is not a function => type-error ('callback is not a function');
+  // Callback is an empty function => returns undefined.
+  // Callback returns the value true (without visiting the array) => returns first el that exists in the array
+  // If called on an empty array => always returns undefined.
+
+  Array.prototype.myFind = function (callback, optionalThis) {
+
+    if (typeof callback !== 'function') {
+      throw new TypeError('callback is not a function');
+    }
+
+    if (optionalThis) {
+      callback = callback.bind(optionalThis);
+    }
+
+    var input = this;
+
+    for (var i = 0; i < input.length; i++) {
+      if (callback(input[i], i, this)) {
+        return input[i];
+      }
+    }
+
+    return undefined;
+  }
+
+  tests({
+    '1. It should return a type-error if callback is not a function.': function () {
+      myArray = [];
+      var isTypeError = false;
+      try {
+        myArray.myFind('not a function');
+      } catch (e) {
+        isTypeError = (e instanceof TypeError);
+      }
+      eq(isTypeError, true);
+    },
+    '2. It should return undefined if callback function is empty.': function () {
+      var myArray = ['something'];
+      eq(myArray.myFind(function () { }), undefined)
+    },
+    '3. It should return undefined when called on an empty array.': function () {
+      var myArray = [];
+      var emptyTest = myArray.myFind(function () {
+        return true;
+      });
+      eq(emptyTest, undefined);
+    },
+    '4. Callback should have access to the current element being evaluated.': function() {
+      var myArray = ['an element'];
+      myArray.myFind(function(el) {
+        eq(el, 'an element');
+      });
+    },
+    '5. Callback should have access to the index of current el being evaluated.': function() {
+      var myArray = ['an element'];
+      myArray.myFind(function(el, index) {
+        eq(index, 0);
+        // eq(array, this);
+      });
+    },
+    '6. Callback should have access the array as an argument.': function() {
+      var myArray = ['an element'];
+      myArray.myFind(function(el, index, myArray) {
+        eq(myArray[0], 'an element');
+      });
+    },
+    '7. It should return the first element in the array that passes callback.': function () {
+      var myArray = [2, 4, 6];
+      var findEl = myArray.myFind(function (el) {
+        return el > 3;
+      });
+      eq(findEl, 4);
+    },
+    '8. If callback returns \'true\' it should return the first element that exists in the array.': function () {
+      var myArray = ['something', 'another thing'];
+      var trueTest = myArray.myFind(function (el) {
+        return true;
+      });
+      eq(trueTest, 'something');
+    },
+    '9. If optionalThis, it should be bound for each invocation of callback.': function () {
+      var myArray = [1, 2, 3];
+      myArray.myFind(function (el) {
+        eq(this.description, 'optionalThis');
+      }, { description: 'optionalThis' });
+    },
+    '10. It should run on empty indexes (holes) in the array.': function () {
+      var myArray = new Array(3);
+      var counter = 0;
+      myArray.myFind(function (el) {
+        counter++;
+      });
+      eq(counter, 3);
+    },
+    '11. If called on an array with nested elements, it should not unwrap unless callback does the work.': function () {
+      var myArray = [['nested']];
+
+      var wrapped = myArray.myFind(function (el) {
+        return typeof el === 'string';
+      });
+      eq(wrapped, undefined);
+
+      var unwrap = myArray.myFind(function (el) {
+        return typeof el === 'object';
+      });
+      eq(unwrap, 'nested');
+
+      // recursive callback
+      myArray.myFind(function (el) {
+        var findNested = el.myFind(function (innerEl) {
+          return typeof innerEl === 'string';
+        });
+        eq(findNested, 'nested');
+      });
+    },
+    '12. It should find an object in an array by one of its properties.': function () {
+      var inventory = [
+        { name: 'apples', quantity: 2 },
+        { name: 'bananas', quantity: 0 },
+        { name: 'cherries', quantity: 5 }
+      ];
+      var cherries = inventory.myFind(function isCherries(fruit) {
+        return fruit.name === 'cherries';
+      });
+      eq(cherries.quantity, 5);
+    },
+    '13. It should not modify the array on which it is called.': function() {
+      var myArray = ['some stuff goes in here'];
+      myArray.myFind(function(el) {
+        return el + 'some other stuff here';
+      });
+      eq(myArray[0], 'some stuff goes in here');
+    },
+  })
+</script>

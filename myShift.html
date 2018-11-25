@@ -1,0 +1,66 @@
+<script src="..\my-jsArrayMethods\simpletest.js"></script>
+<script>
+  // The shift() method removes the first element from an array and returns that removed element. 
+    // This method changes the length of the array.
+
+    // The shift method removes the element at the zeroeth index.
+    // It shifts the values at consecutive indexes down. 
+    // If the length property is 0, undefined is returned.
+    // It returns the removed value. 
+
+  // Shift is intentionally generic; this method can be called or applied to array-like objects. 
+
+  // myShift
+    // Parameter: an array (or array-like object with length property).
+      // input array will be modified - zeroth-index element will be removed.
+      // each subsequent element index will be shifted down.
+    // Return Value: the zeroth index element from the given array.
+
+  function myShift(arr) {
+    if (!Array.isArray(arr) && arr.length === undefined) {
+      throw new TypeError('myShift must be passed an array or array-like object');
+    }
+    var shiftedEl = arr[0]
+    for (var i = 1; i < arr.length; i++) {
+      arr[i - 1] = arr[i];
+    }
+    arr.length = (arr.length - 1);
+    return shiftedEl;
+  }
+
+  tests({
+    'It should throw an error if not passed an array or array-like object.': function() {
+      var isTypeError = false;
+      try {
+        myShift({name: 'Alex'});
+      } 
+      catch(e) {
+        isTypeError = (e instanceof TypeError);
+      }
+      eq(isTypeError, true);
+    },
+    'It should return the value of array[0].': function() {
+      eq(myShift([1]), 1);
+    },
+    'It should shift each el in array (starting at array[1]) one index lower.': function() {
+      var myArray = [1, 2];
+      myShift(myArray);
+      eq(myArray[0], 2);
+    },
+    'It should decrease the length of array parameter by 1.': function() {
+      myArr = [1, 2, 3];
+      myShift(myArr);
+      eq(myArr.length, 2);
+    },
+    'It should work on an array-like object.': function() {
+      var shifted = function() {
+        var args = arguments;
+        var resultEl = arguments[0];
+        var resultLength = arguments.length - 1;
+        eq(myShift(arguments), resultEl);
+        eq(arguments.length, resultLength);
+      }
+      shifted(1, 2, 3);
+    }
+  })
+</script>

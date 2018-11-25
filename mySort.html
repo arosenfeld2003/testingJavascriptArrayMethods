@@ -1,0 +1,154 @@
+<script src="..\my-jsArrayMethods\simpletest.js"></script>
+<script>
+  /*
+  The sort() method sorts the elements of an originalArray in place and returns the originalArray. 
+  Javascript sort algorithm on V8 is now stable. The default sort order is according to string Unicode code points.
+  The time and space complexity of the sort cannot be guaranteed as it is implementation dependent.
+
+  Syntax
+    arr.sort([compareFunction])
+
+  Parameters
+    compareFunction Optional
+      Specifies a function that defines the sort order. 
+      If omitted, the originalArray is sorted according to each character's Unicode code point value... 
+      according to the string conversion of each element.
+
+  Return value
+    The sorted originalArray. 
+    Note that the originalArray is sorted in place, and no copy is made.
+
+  NOTES:
+  If compareFunction is not supplied...
+    all non-undefined originalArray elements are sorted by converting them to strings and comparing strings in Unicode code point order. 
+      For example, "Banana" comes before "cherry". 
+    In a numeric sort, 9 comes before 80...
+      but because numbers are converted to strings, "80" comes before "9" in Unicode order. 
+    All undefined elements are sorted to the end of the originalArray.
+  
+  If compareFunction is supplied...
+    all non-undefined originalArray elements are sorted according to the return value of the compare function 
+    (all undefined elements are sorted to the end of the originalArray, with no call to compareFunction).
+  
+  If a and b are two elements being compared, then:
+
+    If compareFunction(a, b) is less than 0...
+      sort a to an index lower than b, i.e. a comes first.
+    If compareFunction(a, b) returns 0...
+      leave a and b unchanged with respect to each other, but sorted with respect to all different elements. 
+        Note: the ECMAscript standard does not guarantee this behaviour, and thus not all browsers (e.g. Mozilla versions dating back to at least 2003) respect this.
+    If compareFunction(a, b) is greater than 0...
+      sort b to an index lower than a, i.e. b comes first.
+    
+    compareFunction(a, b) must always return the same value when given a specific pair of elements a and b as its two arguments. 
+      If inconsistent results are returned then the sort order is undefined.
+  */
+
+  Array.prototype.mySort = function (compareFunction) {
+    var originalArray = this;
+    // move undefined elements to the end of the array.
+    for (var i = 0; i < originalArray.length; i++) {
+      if (typeof(originalArray[i]) === 'undefined') {
+        originalArray[originalArray.length] = originalArray[i];
+        originalArray.splice(i, 1);
+      }
+    }
+    for (var i = 0; i < originalArray.length; i++) {
+      for (var j = i+ 1; j < originalArray.length; j++) {
+        // do not run compare function on undefined elements.
+        if (typeof(originalArray[j]) === 'undefined') {
+          continue;
+        }
+        if (typeof(compareFunction) === 'undefined') {
+          // no compare function; compare unicode values and sort.
+          if (String(originalArray[i]) > String(originalArray[j])) {
+            // j comes first ===> swap elements.
+            var temp = originalArray[i];
+            originalArray[i] = originalArray[j];
+            originalArray[j] = temp;
+          }
+        }
+        if (typeof(compareFunction) === 'function') {
+          // use compare function.
+          if (compareFunction(originalArray[i], originalArray[j]) > 0) {
+            // j comes first ===> swap elements.
+            var temp = originalArray[i];
+            originalArray[i] = originalArray[j];
+            originalArray[j] = temp;
+          }
+        }
+      }
+    }  
+    return this;
+  }
+
+  tests({
+    'It should sort the originalArray in place and return the same originalArray (not a copy).': function() {
+      var myArray = [3, 2, 1];
+      eq(myArray.mySort(), myArray);
+    },
+    'If no compare function, it should convert all values to string, then sort according to unicode point order.': function() {
+      // taken from mdn docs.
+      var array1 = [1, 30, 4, 21];
+      array1.mySort();
+      // [1, 21, 30, 4]
+      eq(array1[0], 1);
+      eq(array1[1], 21);
+      eq(array1[2], 30);
+      eq(array1[3], 4);
+    },
+    'If no compare function, it should sort all undefined elements to the end of the originalArray.': function() {
+      var sortUndefined = [4, 3, undefined, 2, , 1];
+      sortUndefined.mySort();
+      eq((sortUndefined[0] === 1), true);
+      eq((sortUndefined[1] === 2), true);
+      eq((sortUndefined[2] === 3), true);
+      eq((sortUndefined[3] === 4), true);
+      eq((sortUndefined[4] === undefined), true);
+      eq((sortUndefined[5] === undefined), true);
+    },
+    'If compare function, it should sort undefined elements (including holes) to the end of the originalArray.': function() {
+      var sortUndefined = [4, 3, undefined, 2, , 1];
+      sortUndefined.mySort(function(a, b) {
+        return a - b;
+      });
+      eq(sortUndefined[0], 1);
+      eq(sortUndefined[1], 2);
+      eq(sortUndefined[2], 3);
+      eq(sortUndefined[3], 4);
+      eq(sortUndefined[4], undefined);
+      eq(sortUndefined[5], undefined);
+    },
+    'It should throw a type error if compare function is not of type \'function\' or \'undefined\'.': function () {
+      var isTypeError = false;
+      var myArray = [1, 2, 3];
+      try {
+        myArray.mySort('not a function');
+      } catch(e) {
+        isTypeError = (e instanceof TypeError);
+        eq(isTypeError, true);
+      }
+    },
+    'It does not run the callback function on undefined elements.': function () {
+      var numbers = [undefined, 21];
+      var numberOfTimesCallbackHasBeenRun = 0;
+      numbers.mySort(function (a, b){
+        numberOfTimesCallbackHasBeenRun++
+        return a - b;
+      });
+      eq(numberOfTimesCallbackHasBeenRun, 0)
+    },  
+    // version of Janelle's Test, taken from MDN docs.
+    'It accepts an optional callback function and sorts accordingly.': function () {
+      var originalArray = [1, 30, 4, 21];
+      // from docs: sorts numbers in order, not by string.
+      originalArray.mySort(function (a, b) {
+        return a - b;
+      });
+      var sortedByNumericalValue = [1, 4, 21, 30];
+      sortedByNumericalValue.forEach(function (num, i) {
+        eq(num, originalArray[i]);
+      });
+    }
+  })
+</script>

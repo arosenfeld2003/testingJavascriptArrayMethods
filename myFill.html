@@ -1,0 +1,225 @@
+<script src="..\my-jsArrayMethods\simpletest.js"></script>
+
+<script>
+  /*
+  The fill() method fills all the elements of an array from a start index to an end index with a static value. 
+  The end index is not included.
+
+  Parameters
+    value
+      Value to fill an array.
+
+    start Optional
+      Start index, defaults to 0.
+
+    end Optional
+      End index, defaults to this.length.
+  
+  Return value
+    The modified array.
+
+  Notes
+    The fill method takes up to three arguments value, start and end. 
+
+    The start and end arguments are optional with default values of 0 and the length of the this object.
+      If start is negative, it is treated as length+start where length is the length of the array. 
+      If end is negative, it is treated as length+end.
+
+    The fill function is intentionally generic, it does not require that its this value be an Array object.
+
+    The fill method is a mutable method, it will change this object itself, and return it, not just return a copy of it.
+
+    When the fill method gets passed an object, it will copy the reference and fill the array with references to that object.
+  */
+  
+  Array.prototype.myFill = function(value, startIndex, endIndex) {
+    // start/end index edge cases for null or NaN => NaN is only object that will not equal itself.
+    if (endIndex === null || endIndex !== endIndex) {
+      return;
+    }
+
+    // edge case for boolean passed in as start/end index.
+    function boolToInteger(el) {
+      // '+ boolean' converts false to 0, true to 1.
+      return el = + el;
+    }
+    if (typeof(startIndex) === 'boolean') {
+      startIndex = boolToInteger(startIndex);
+    }
+    if (typeof(endIndex) === 'boolean') {
+      endIndex = boolToInteger(endIndex);
+    }    
+
+    var filledArray = this;
+    var start = startIndex || 0;
+    var end = endIndex || this.length;
+    if (start < 0) {
+      start += filledArray.length;
+    }
+    if (end < 0) {
+      end += filledArray.length;
+    }
+    for (var i = start; i < end; i++) {
+      filledArray[i] = value;
+    }
+    return filledArray;
+  };
+
+  tests({
+    '1. It should modify original array and return it.': function() {
+      var myArray = ['alex'];
+      var filled = myArray.myFill('katie');
+      eq(myArray, filled);
+      eq(myArray[0], 'katie');
+    },
+    '2. It should not change length of original array/object.': function() {
+      var myArray = [1, 2, 3];
+      myArray.myFill(5);
+      eq(myArray.length, 3);
+    },
+    '3. If no start or end, no matter the data type or value, it should fill all indexes of the array with value.': function() {
+      var myArray = ['alex'];
+      var testArray = ['testing'];
+      var testObject= {type: 'test'};
+      // number, string, bool, undefined, object, array, NaN, null
+      myArray.myFill(1);
+      eq(myArray[0], 1);
+
+      myArray.myFill('');
+      eq(myArray[0], '');
+
+      myArray.myFill(false);
+      eq(myArray[0], false);
+
+      myArray.myFill(undefined);
+      eq(myArray[0], undefined);
+
+      myArray.myFill(testObject);
+      eq(myArray[0].type, 'test');
+      
+      myArray.myFill(testArray);
+      eq(myArray[0], 'testing');
+
+      myArray.myFill(NaN);
+      eq(isNaN(myArray[0]), true);
+
+      myArray.myFill(null);
+      eq(myArray[0], null);
+    },
+    '4. If optional start, it should fill all elements beginning at start index.': function() {
+      var myArray = [1, 2, 3];
+      var filledFromStart = myArray.myFill('alex', 2);
+      eq(myArray[0], 1);
+      eq(myArray[1], 2);
+      eq(myArray[2], 'alex');
+    },
+    '5. If optional endIndex, it should fill all elements up to (but not including) end index.': function() {
+      var myArray = [1, 2, 3];
+      var filledFromStart = myArray.myFill('alex', 0, 1);
+      eq(myArray[0], 'alex');
+      eq(myArray[1], 2);
+      eq(myArray[2], 3);
+    },
+    '6. If startIndex is negative, it should start at array[array.length + start]': function() {
+      var myArray = [1, 2, 3];
+      var filledFromStart = myArray.myFill('alex', -2);
+      eq(myArray[0], 1);
+      eq(myArray[1], 'alex');
+      eq(myArray[2], 'alex');
+    },
+    '7. If endIndex is negative, it should fill up to array[array.length + end]': function() {
+      var myArray = [1, 2, 3];
+      var filledFromStart = myArray.myFill('alex', 0, -2);
+      eq(myArray[0], 'alex');
+      eq(myArray[1], 2);
+      eq(myArray[2], 3);
+    },
+    '8. If calculated end (index, offset from array.length) is negative, no elements should be filled.': function() {
+      var myArray = [1, 2, 3];
+      var filledFromStart = myArray.myFill('alex', 0, -5);
+      eq(myArray[0], 1);
+      eq(myArray[1], 2);
+      eq(myArray[2], 3);
+    },
+    '9. If calculated start is > array.length, no elements should be filled.': function() {
+      var myArray = [1, 2, 3];
+      var filledFromStart = myArray.myFill('alex', 4);
+      eq(myArray[0], 1);
+      eq(myArray[1], 2);
+      eq(myArray[2], 3);
+    },
+    '10. It should fill any empty object that has a length property, maintaining pre-existing properties in subsequent indexes.': function() {
+      var myObj = {pet: 'cat', length: 1};
+      [].myFill.call(myObj, 'dog');
+      eq(myObj[0], 'dog');
+      eq(myObj.pet, 'cat');
+    },
+    '11. It should not fill any object without a pre-existing length property.': function() {
+      var myObj = {};
+      [].myFill.call(myObj, 'test');
+      eq(myObj.length, undefined);
+      eq(myObj[0], undefined);
+    },
+    '12. If passed no arguments, it should fill each array element with the value \'undefined\'': function() {
+      var myArray = ['alex'];
+      myArray.myFill();
+      eq(myArray[0], undefined);
+    },
+    '13. It should copy the reference and fill the array with references to an object.': function() {
+      var myArray = [1, 2, 3];
+      myArray.myFill({}); // [{}, {}, {}]; The three objects are the same object.
+      myArray[0].hi = "hi"; // Update one, doesn't mater which one, update everyone.
+      eq(myArray[1].hi, myArray[2].hi);
+    },
+    '14. If passed in end-index === null, no elements should be filled.': function() {
+      var myArray = [1];
+      var filled = myArray.myFill('alex', 0, null);
+      eq(myArray[0], 1);
+    },
+    '15. If passed in end-index === NaN, no elements should be filled.': function() {
+      var myArray = [1];
+      var filled = myArray.myFill('alex', 0, NaN);
+      eq(myArray[0], 1);
+    },
+    
+    '16. If passed in end-index is an object, no elements should be filled.': function() {
+      var myArray = [1];
+      var filled = myArray.myFill('alex', 0, {});
+      eq(myArray[0], 1);
+    },
+    '17. If passed in end-index is an array not containing a number, no elements should be filled.': function() {
+      var myArray = [1];
+      var filled = myArray.myFill('alex', 0, ['test']);
+      eq(myArray[0], 1);
+    },
+    '18. If passed in end-index is an array containing a number, it should fill according to rules for the number.': function() {
+      var myArray = [1];
+      var filled = myArray.myFill('alex', 0, [1]);
+      eq(myArray[0], 'alex');
+    },
+    '19. If passed in end-index is a string containing a number, it should convert to number and run accordingly.': function() {
+      var myArray = [1];
+      var filled = myArray.myFill('alex', 0, '1');
+      eq(myArray[0], 'alex');
+    },
+    '20. If passed in end-index is a string not containing a number, it should not fill.': function() {
+      var myArray = [1];
+      var filled = myArray.myFill('alex', 0, 'string');
+      eq(myArray[0], '1');
+    },
+    '21. If passed in end-index === undefined, it should fill to the end (default).': function() {
+      var myArray = [1];
+      var filled = myArray.myFill('alex', 0, undefined);
+      eq(myArray[0], 'alex');
+    },
+    '22. It should convert true/false to an integer and fill accordingly when passed in as start or end index.': function () {
+      var myArray = [1, 2];
+      var fillTrue = myArray.myFill('alex', true);
+      eq(myArray[0], 1);
+      eq(myArray[1], 'alex');
+      var fillFalse = myArray.myFill('testing', false);
+      eq(myArray[0], 'testing');
+      eq(myArray[1], 'testing');
+    }
+  });
+</script>

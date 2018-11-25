@@ -1,0 +1,62 @@
+<script src="..\my-jsArrayMethods\simpletest.js"></script>
+<script>
+// MDN Docs notes
+// The pop() method removes the last element from an array and returns that element. 
+
+// Parameters
+  // array
+
+// Return value
+  // The removed element from the array; undefined if the array is empty.
+
+// Pop is intentionally generic; this method can be called or applied to objects resembling arrays. 
+
+// Notes:
+// If you call pop() on an empty array, it returns undefined.
+// This method changes the length of the array.
+// myPop should update the length property of any object, or create {length: 0} if no length property exists.
+
+function myPop(obj) {
+  if (typeof obj === 'object' && !Array.isArray(obj)) {
+    if (obj.length === undefined) {
+      obj.length = 0;
+    } else {
+      obj.length -= 1;
+    }
+    return obj.length;
+  }
+  if (Array.isArray(obj)) {
+    if (obj.length === 0) {
+      return undefined;
+    }
+    var poppedIndex = obj.length - 1;
+    var returnValue = obj[poppedIndex];
+    obj.length = (obj.length - 1);
+    return returnValue;
+  }
+}
+
+tests({
+  'It should return undefined if passed an empty array.': function() {
+    eq(myPop([]), undefined);
+  },
+  'It should return the last element of passed in array.': function() {
+    eq(myPop([1, 2, 3]), 3);
+  },
+  'It should modify passed in array, removing final element.': function() {
+    var originalArray = [1, 2, 3];
+    myPop(originalArray);
+    eq(originalArray.length, 2);
+  },
+  'It should set length of zero if passed an object with no length property.': function() {
+    var myObj = {name: 'Alex'};
+    myPop(myObj);
+    eq(myObj.length, 0);
+  },
+  'It should update the length of an object that is not an array.': function() {
+    var myObj = {length: 2};
+    myPop(myObj);
+    eq(myObj.length, 1);
+  }
+})
+</script>

@@ -1,0 +1,83 @@
+<script src="..\my-jsArrayMethods\simpletest.js"></script>
+<script>
+  // The unshift() method adds one or more elements to the beginning of an array.
+  // It returns the new length of the array.
+
+  // The unshift method inserts the given values to the beginning of an array-like object.
+  // unshift is intentionally generic; 
+    // this method can be called or applied to objects resembling arrays. 
+      // unshift may not work on an object that does not contain a length property that is a number.
+  
+  // Parameters:
+    // elementN: The elements to add to the front of the array.
+  
+  // Return Value:
+    // the new length of the appended array.
+
+  // Notes: 
+    // this version of unshift will overwrite the native prototype Array.prototype.unshift.
+  
+  Array.prototype.unshift = function(elements) {
+
+    var newLength = this.length + arguments.length;
+    var updatedObj = this;
+    var temp;
+
+    if (Array.isArray(this)) {
+      temp = [];
+    } else {
+      // handle an array-like object.
+      temp = {};
+      if (typeof this === 'object') {
+        if (!this.length) {
+          this.length = 0;
+        }
+      }
+    }
+    
+    // store data from 'this' on temp variable.
+    for (var i = 0; i < this.length; i++) {
+      temp[i] = this[i];
+    }
+    
+    // append the arguments to the called upon array or array-like object.
+    for (var i = 0; i < newLength; i++) {
+      if (i < arguments.length) {
+        this[i] = arguments[i];
+      } else {
+         this[i]  = temp[i - arguments.length];
+      }
+      if (!Array.isArray(this)) {
+        this.length ++;
+      }
+    }
+    return this.length;   
+  }
+
+  tests({
+    '1. If passed no arguments, it should return the length of the array it is called upon.': function() {
+      var myArray = [];
+      var unshifted = myArray.unshift();
+      eq(unshifted, 0);
+    },
+    '2. It should prepend all elements to the array it is called upon.': function() {
+      var myArray = ['a thing'];
+      var unshifted = myArray.unshift('prepended thing');
+      eq(myArray[0], 'prepended thing');
+      eq(myArray[1], 'a thing');
+      eq(unshifted, 2);
+    },
+    '3. It should create a length property equal to zero if applied or called without any arguments to an array-like object without a length property.': function() {
+      var myObj = {};
+      Array.prototype.unshift.call(myObj);
+      eq(myObj.length, 0);
+    },
+    '4. It should shift elements onto an array-like object.': function() {
+      var myObj = {length: 0};
+      Array.prototype.unshift.call(myObj, 'first item', 'second item');
+      eq(myObj.length, 2);
+      eq(myObj[0], 'first item');
+      eq(myObj[1], 'second item');
+    },
+  })
+</script>

@@ -1,0 +1,143 @@
+<script src="../my-jsArrayMethods/simpletest.js"></script>
+<script>
+  // The splice() method changes the contents of an array by removing existing elements and/or adding new elements.
+ 
+
+    // Built using MDN docs as specs: 
+      // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/splice
+    /*
+    Parameters
+      start
+        Index at which to start changing the array (with origin 0). 
+          If greater than the length of the array, actual starting index will be set to the length of the array. 
+          If negative, will begin that many elements from the end of the array (with origin -1). 
+            Will be set to 0 if absolute value is greater than the length of the array.
+
+      deleteCount Optional
+        An integer indicating the number of old array elements to remove.
+        If deleteCount is omitted, or if its value is larger than array.length - start... 
+          (that is, if it is greater than the number of elements left in the array, starting at start)... 
+          then all of the elements from start through the end of the array will be deleted.
+        If deleteCount is 0 or negative, no elements are removed. 
+          In this case, you should specify at least one new element (see below).
+
+      item1, item2, ... Optional
+        The elements to add to the array, beginning at the start index. 
+          If you don't specify any elements, splice() will only remove elements from the array.
+
+    Return value
+      An array containing the deleted elements. 
+        If only one element is removed, an array of one element is returned. 
+        If no elements are removed, an empty array is returned.
+    */
+  // Notes:
+     // mySplice replicates Array.prototype.splice() but must be passed the array as an argument.
+     
+  function mySplice(originalArr, startIndex, numToSplice, addedItems) {
+  // function splice(originalArr, startIndex, numToSplice, addedItems) {
+    var splicedArr = [], elsBeforeSplice = [], elsAfterSplice = [], updatedOriginalArr = [];
+    // set conditions based on MDN docs
+    if (arguments.length === 1) {
+      return splicedArr;
+    }
+    if (startIndex < 0) {
+      startIndex = originalArr.length + startIndex;  
+      if (startIndex < 0) {
+        startIndex = 0;
+      }
+    }
+    if (startIndex > originalArr.length) {
+      startIndex = originalArr.length;
+    }
+    if (arguments.length === 2) {
+      numToSplice = originalArr.length - startIndex;
+    }
+    var endIndex = numToSplice + startIndex;
+    for (var i = 0; i < originalArr.length; i++) {
+      if (i < startIndex) {
+        elsBeforeSplice.push(originalArr[i]);
+      }
+      if (i >= startIndex && i < endIndex) {
+        splicedArr.push(originalArr[i]);
+      }
+      if (i >= endIndex) {
+        elsAfterSplice.push(originalArr[i]);
+      }
+    }
+    // push any additional elements to elsBeforeSplice
+    var addedEls = [];
+    for (var i = 3; i < arguments.length; i++) {
+      addedEls.push(arguments[i]);
+    }
+    // push addedEls to elsBeforeSplice 
+    Array.prototype.push.apply(elsBeforeSplice, addedEls);
+    // update originalArr 
+    var updatedOriginal = elsBeforeSplice.concat(elsAfterSplice);
+    for (var i = 0; i < updatedOriginal.length; i ++) {
+      originalArr[i] = updatedOriginal[i];
+    }
+    while (originalArr.length > updatedOriginal.length) {
+      originalArr.pop();
+    }
+    return splicedArr;
+  }
+
+  tests({
+    'If only passed an array, it should return a new empty array and originalArray should remain unchanged.': function() {
+      var myArr = [1, 2, 3, 4, 5];
+      var splicedArr = mySplice(myArr);
+      eq(splicedArr.length, 0);
+      eq(myArr.length, 5);
+    },
+    'If startIndex > originalArray.length, no items should be deleted from originalArray.': function() {
+      var myArr = [1, 2, 3, 4, 5];
+      mySplice(myArr, 6);
+      eq(myArr.length, 5);
+    },    
+    'If startIndex is positive integer, all els at lower indexes in originalArray should remain unchanged.': function() {
+      var myArr = [1, 2, 3, 4, 5];
+      mySplice(myArr, 2);
+      eq(myArr[0], 1);
+      eq(myArr[1], 2);
+    },
+    'If startIndex is positive integer and no numToSplice, all els at indexes above startIndex in originalArray should be spliced.': function() {
+      var myArr = [1, 2, 3, 4, 5];
+      var spliced = mySplice(myArr, 2);
+      eq(spliced.length, 3);
+      eq(myArr.length, 2);
+    },
+    'If startIndex and numToSplice are both positive integers, it should splice numToSplice els beginning at startIndex.': function() {
+      var myArr = [1, 2, 3, 4, 5];
+      var spliced = mySplice(myArr, 2, 2);
+      eq(spliced.length, 2);
+      eq(myArr.length, 3);
+    },
+    'If startIndex is a negative integer, it should calculate startIndex by offsetting from originalArray.length': function() {
+      var myArr = [1, 2, 3, 4, 5];
+      var spliced = mySplice(myArr, -2);
+      eq(myArr.length, 3);
+      eq(spliced.length, 2);
+    },
+    'It defaults to zero if calculated start index is negative.': function() {
+      // test courtesy of Janelle de Ment.
+      var myFish = ['angel', 'clown', 'mandarin', 'sturgeon'];
+      var removed = mySplice(myFish, -5, 1);
+      var supposedFish = ['clown', 'mandarin', 'sturgeon'];
+      supposedFish.forEach(function(fish, i) {
+        eq(fish, myFish[i]);
+      }); 
+      eq(removed[0], 'angel');
+    },
+    'If no numToSplice, or if numToSplice is > than els in array after startIndex, it should splice all els after startIndex.': function() {
+      var myArr = [1, 2, 3, 4, 5];
+      var spliced = mySplice(myArr, 1, 5);
+      eq(myArr.length, 1);
+      eq(spliced.length, 4);
+    },
+    'If added elements, they should be appended to originalArray beginning at startIndex.': function() {
+      var myArr = [1, 2];
+      mySplice(myArr, 1, 1, 'added element');
+      eq(myArr[1], 'added element');
+    }
+  });
+</script>

@@ -1,0 +1,79 @@
+<script src="..\my-jsArrayMethods\simpletest.js"></script>
+<script>
+// My version of the native Array.prototype.map function.
+
+// Parameters
+    // array
+    // callback function which takes three arguments.
+        // currentValue: The current element being processed in the array.
+        // indexOptional: The index of the current element being processed in the array.
+        // arrayOptional: The array map was called upon.
+    // optionalThis
+// Return Value
+    // A new array containing the results of callback function on each element.
+
+function myMap(array, callback, optionalThis) {
+    // var boundCallback = callback; /* unnecessary variable declaration */
+    if (optionalThis) {
+        // boundCallback = callback.bind(optionalThis); 
+        callback = callback.bind(optionalThis);
+    }
+    var mappedArray = [];
+    for (var i = 0; i < array.length; i ++) {
+        if (i in array) {
+           mappedArray[i] = callback(array[i], i, array);
+       }
+    }
+    return mappedArray;
+};
+
+tests({
+    'It should run callback function array.length times.': function() {
+        var callbackCount = 0;
+        myMap([1, 2, 3], function() {
+            callbackCount ++;
+        });
+        eq(callbackCount, 3);
+    },
+    'It should pass the current element being processed as first argument to callback.': function() {
+        myMap([1], function(el) {
+            eq(1, el);
+        });
+    },
+    'It should pass callback the current element index as second argument.': function() {
+        myMap([1], function(el, index) {
+            eq(0, index);
+        });
+    },
+    'It should pass callback the originalArray as third argument': function() {
+        var testArray = [1, 2, 3];
+        myMap(testArray, function(el, index, originalArray) {
+            eq(testArray, originalArray);
+        })
+    },
+    'It should accept an optional this argument to be used by callback.': function() {
+        myMap([1, 2, 3], function() {
+           eq(this.description, 'I am optionalThis arg in callback.'); 
+        }, {description: 'I am optionalThis arg in callback.'});
+    },
+    'It should not modify originalArray.': function() {
+        var originalArray = [];
+        var mappedArray = myMap(originalArray, function() {});
+        eq(originalArray === mappedArray, false);
+    },
+    'It should return new array that is the same length as originalArray.': function() {
+        var myMapTest = myMap([1, 2, 3], function(el) {
+            return el + 1;
+        });
+        eq(myMapTest.length, 3);
+    },
+    'It should return new array containing results of callback on each el of originalArray.': function() {
+        var myMapTest = myMap([1, 2, 3], function(el) {
+            return el + 1;
+        });
+        eq(myMapTest[0], 2);
+        eq(myMapTest[1], 3); // Added additional els to test callback on multiple elements of the array.
+        eq(myMapTest[2], 4); 
+    },
+});
+</script>

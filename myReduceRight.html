@@ -1,0 +1,160 @@
+<script src="..\my-jsArrayMethods\simpletest.js"></script>
+<script>
+  // The reduceRight() method applies a function against an accumulator and each value of the array (from right-to-left).
+  // Result is reduced to a single value, which is returned.
+
+  // Parameters
+
+  // originalArray.
+
+  // callback
+    // Function to execute on each value in the array, taking four arguments:
+      // previousValue
+        // The value previously returned in the last invocation of the callback, or initialValue, if supplied. (See below.)
+      // currentValue
+        // The current element being processed in the array.
+      // indexOptional
+        // The index of the current element being processed in the array.
+      // arrayOptional
+        // The array reduce was called upon.
+
+  // initialValueOptional
+    // Object to use as the first argument to the first call of the callback. 
+      // If no initial value is supplied, the last element in the array will be used. 
+      // Calling reduce on an empty array without an initial value is an error.
+  
+  // Returns: Reduced Value
+
+  // Notes: 
+    // If initialValue isn't provided, reduce() will execute the callback function starting at (final array index - 1).
+      // It will use the final array index as initialValue. 
+    // If initialValue is provided, it will start at final array index.
+    // If the array is empty and no initialValue is provided, TypeError will be thrown. 
+    // If the array has only one element (regardless of position) and no initialValue is provided... 
+        // or if initialValue is provided but the array is empty, ...
+            // ...the solo value will be returned without calling callback.
+
+  function myReduceRight(originalArray, callback, initialValue) {
+    var startingIndex = originalArray.length;
+    var reducedValue;
+    // if no initialValue
+    if (arguments.length < 3) {
+      // If originalArray is empty, throw TypeError.
+      if (Object.keys(originalArray).length === 0) {
+        throw new TypeError ('Reduce of empty array with no initial value');
+      }
+      // If originalArray has only one element, just return it.
+      if (Object.keys(originalArray).length === 1) {
+        return originalArray[0];
+      }
+      while (startingIndex in originalArray === false && startingIndex >= 0) {
+        startingIndex --;
+      }
+      reducedValue = originalArray[startingIndex];
+      startingIndex--;
+    } else { 
+      // has initialValue
+      if (Object.keys(originalArray).length === 0) {
+        return initialValue;
+      }
+      reducedValue = initialValue;
+    }
+    for (var i = startingIndex; i >= 0; i --) {
+      if (i in originalArray) {
+          reducedValue = callback(reducedValue, originalArray[i], i, originalArray);   
+      }
+    }
+    return reducedValue;
+  }
+
+  tests({
+    'It should accept an optional initialValue to be used as the accumulator.' : function() {
+      var testInitialValue = myReduceRight([], function() {}, 36);
+      eq(testInitialValue, 36);
+    },
+    'If initialValue, callback should run originalArray.length times.': function() {
+    callbackCounter = 0;
+    myReduceRight([1, 2, 3], function() {
+        callbackCounter ++;
+    }, 1);
+    eq(callbackCounter, 3);
+    },
+    'If no initialValue, callback should run (originalArray.length - 1) times.': function() {
+      callbackCounter = 0;
+      myReduceRight([1, 2, 3], function() {
+        callbackCounter ++;
+      });
+      eq(callbackCounter, 2);
+    },
+    'If no initialValue, reducedValue should start as final value of array.' : function() {
+      var testNoInitialValue = myReduceRight([2], function(acc, currentValue) {
+        eq(currentValue, 2);
+      });
+    },
+    'It should pass callback the current value of the element being evaluated.' : function() {
+      var originalArray = [2];
+      myReduceRight(originalArray, function(acc, currentValue) {
+        for (i = 0; i < originalArray.length; i ++) {
+          eq(originalArray[i], 2);
+        }
+      });
+    },
+    'It should pass callback an optional index of the el being evaluated.' : function() {
+      var originalArray = [3];
+      myReduceRight(originalArray, function(acc, currentValue, index) {
+        for (var i = 0; i < originalArray.length; i ++) {
+          eq(index, 0);
+        }
+      });
+    },
+    'It should pass callback the array being evaluated.' : function() {
+      var originalArray = [1, 2, 3];
+      myReduceRight(originalArray, function(acc, currentValue, index, testArray) {
+        eq(testArray, originalArray);
+      });
+    },
+    'It should reduce originalArray to single value based on callback.' : function() {
+      var originalArray = [1, 2, 3];
+      var reducedArrayValue = myReduceRight(originalArray, function(acc, num) {
+        return acc + num;
+      });
+      eq(reducedArrayValue, 6)
+    },
+    'If initialValue, callback should not run on holes in the originalArray.' : function() {
+      var originalArray = [, 2, , 4, ,];
+      var reducedArrayValue = myReduceRight(originalArray, function(acc, num) {
+        return acc + num;
+      }, 0);
+      eq(reducedArrayValue, 6);
+    },
+    'If no initialValue, callback should not run on holes at beginning of originalArray.' : function() {
+      var originalArray = [, 2, , 4, ,];
+      var reducedArrayValue = myReduceRight(originalArray, function(acc, num) {
+        return acc + num;
+      });
+      eq(reducedArrayValue, 6);
+    },
+    'If array is empty, and no initialValue, throw TypeError.' : function() {
+      var isTypeError = false;
+      try {
+        myReduceRight([], function() {});
+      } catch(e) {
+        isTypeError = (e instanceof TypeError);
+      }
+      eq(isTypeError, true);
+    },
+    'If array is empty, and initialValue, it should return initialValue without calling callback.': function() {
+      var numberOfTimesCallbackHasRun = 0;
+      var initialValue = 0;
+      var reducedValue = myReduceRight([,,], function() {
+        numberOfTimesCallbackHasRun++;
+      }, initialValue);
+      eq(reducedValue, initialValue);
+      eq(numberOfTimesCallbackHasRun, 0);
+    },
+    'If array has one element, and no initialValue, it should return only element.' : function() {
+      var reducedValue = myReduceRight([5], function() {});
+      eq(reducedValue, 5);
+    }
+  });
+</script>

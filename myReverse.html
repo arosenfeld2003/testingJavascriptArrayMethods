@@ -1,0 +1,47 @@
+haha<script src="..\my-jsArrayMethods\simpletest.js"></script>
+<script>
+  // The reverse() method reverses an array in place. 
+    // The first array element becomes the last, and the last array element becomes the first.
+  // Notes:
+    // The reverse method transposes the elements of the calling array object in place, 
+    // mutating the array, and returning a reference to the array.
+    // myReverse will throw an error if not passed an array.
+  
+  function myReverse(arr) {
+    if(!Array.isArray(arr)) {
+      throw new TypeError('myReverse must be passed an array.')
+    }
+    var halfLength = Math.floor(arr.length/2);
+    for (var i = 0; i < halfLength; i++) {
+      var originalValue = arr[i];
+      var swapIndex = arr.length - 1 - i;
+      var swapValue = arr[swapIndex];
+
+      arr[i] = swapValue;
+      arr[swapIndex] = originalValue;
+    }
+    return arr;
+  }
+
+  tests({
+    'It should return a reference to the input array.': function() {
+      myArray = [1, 2, 3];
+      eq(myReverse(myArray), myArray);
+    },
+    'It should throw type error if not passed an array.': function() {
+      var isTypeError = false;
+      try {
+        myReverse({});
+      }
+      catch(e) {
+        isTypeError = (e instanceof TypeError);
+      }
+      eq(isTypeError, true);
+    },
+    'It should reverse the order of the elements in the array.': function() {
+      var reversedArr = myReverse([1, 2, 3, 4, 5]);
+      eq(reversedArr[0], 5);
+      eq(reversedArr[4], 1);
+    },
+  })
+</script>
