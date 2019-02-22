@@ -32,6 +32,15 @@
     // The modified array.
   
   // Notes:
+    /*
+
+      2/21/19 Refactor to pass test 12 (work on objects).
+
+      Objective:
+        If passed an array-like object, myCopyWithin should:
+          - copy the VALUE of each property to the numerical position within the new object.
+
+    */
 
   Array.prototype.myCopyWithin = function(target, optionalStart, optionalEnd) {
     var arr = this;
@@ -57,7 +66,20 @@
         target ++;
       }
     }
+
+    // modified to work generically on array-like object.
+    if (!Array.isArray(arr)) {
+      for (var i = 0; i < arr.length; i++) {
+        Object.keys(arr).forEach(key => {
+          if (!arr[key]) {
+            delete arr[key];
+          }
+        });
+      }
+    }
+
     return arr;
+  
   }
 
   tests({
@@ -133,10 +155,13 @@
       holesArray.copyWithin(0, 1);
       eq(holesArray[0], undefined);
     },
+    // Original Test Modified
     '12. It should work generically on an object.': function() {
       var weirdObject = {length: 5, 3: 1};
       Array.prototype.myCopyWithin.call(weirdObject, 0, 3);
       eq(weirdObject[0], 1);
+      eq(weirdObject[3], 1);
+      eq(weirdObject.length, 5);
     },
     '13. It should work on nested arrays.': function() {
       var nestedArray = [['nested'], 'not nested', 3];
