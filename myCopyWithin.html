@@ -35,6 +35,7 @@
     /*
 
       2/21/19 Refactor to pass test 12 (work on objects).
+      2/21/19 Refactor to work with negative start value (subtracted from the end).
 
       Objective:
         If passed an array-like object, myCopyWithin should:
@@ -60,6 +61,16 @@
       return arr;
     }
     
+    // refactored to account for negative start index.
+    if (startIndex < 0) {
+      startIndex += arr.length;
+    }
+
+    // refactored to account for negative end index.
+    if (endIndex < 0) {
+      endIndex += arr.length;
+    }
+
     for (var i = startIndex; i < endIndex; i++) { 
       if (target < arr.length) {
         arr[target] = originalArr[i];
@@ -71,6 +82,8 @@
     if (!Array.isArray(arr)) {
       for (var i = 0; i < arr.length; i++) {
         Object.keys(arr).forEach(key => {
+          // delete only removes the key when using the urnary ! operator.
+          // e.g. if (arr[key] === undefined) will not work here.
           if (!arr[key]) {
             delete arr[key];
           }
@@ -168,5 +181,18 @@
       nestedArray.myCopyWithin(2, 0);
       eq(Array.isArray(nestedArray[2]), true);
     },
+    // test added: 2/21
+    '14. If negative start index, it should be subtracted from array.length.': function() {
+      var copied = [1, 2, 3, 4, 5].myCopyWithin(2, -2, 5);
+      eq(copied[2], 4);
+      eq(copied[3], 5);
+      eq(copied[4], 5);
+    },
+    '15. If negative end index, it should be subtracted from array.length.': function() {
+      var copied = [1, 2, 3, 4, 5].myCopyWithin(2, 1, -2);
+      eq(copied[2], 2);
+      eq(copied[3], 3);
+      eq(copied[4], 5);
+    }
   })
 </script>
