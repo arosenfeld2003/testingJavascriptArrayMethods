@@ -30,28 +30,19 @@
 
   // Return value
     // The modified array.
-  
-  // Notes:
-    /*
-
-      2/21/19 Refactor to pass test 12 (work on objects).
-      2/21/19 Refactor to work with negative start value (subtracted from the end).
-
-      Objective:
-        If passed an array-like object, myCopyWithin should:
-          - copy the VALUE of each property to the numerical position within the new object.
-
-    */
 
   Array.prototype.myCopyWithin = function(target, optionalStart, optionalEnd) {
     var arr = this;
     var originalArr = []; // to be used as temp storage during execution.
     var startIndex = optionalStart || 0;
     var endIndex = optionalEnd || arr.length;
-    
+
     // copy values of input array into a temp stoarge variable.
     for (var i = 0; i < arr.length; i++) {
-      originalArr[i] = arr[i];
+      // do not copy indexes containing holes.
+      if (arr.hasOwnProperty(i)) {
+        originalArr[i] = arr[i];
+      }
     }
     
     if (target < 0) {
@@ -70,24 +61,17 @@
     if (endIndex < 0) {
       endIndex += arr.length;
     }
-
+    
+    // 2/22: refactored to ensure holes remain.
     for (var i = startIndex; i < endIndex; i++) { 
       if (target < arr.length) {
-        arr[target] = originalArr[i];
+        // do not copy indexes that contain holes.
+        if (originalArr.hasOwnProperty(i)) {
+          arr[target] = originalArr[i];
+        } else {
+          delete arr[target];
+        }
         target ++;
-      }
-    }
-
-    // modified to work generically on array-like object.
-    if (!Array.isArray(arr)) {
-      for (var i = 0; i < arr.length; i++) {
-        Object.keys(arr).forEach(key => {
-          // delete only removes the key when using the urnary ! operator.
-          // e.g. if (arr[key] === undefined) will not work here.
-          if (!arr[key]) {
-            delete arr[key];
-          }
-        });
       }
     }
 
@@ -163,10 +147,11 @@
       eq(myArray[3], undefined);
       eq(myArray[4], null);
     },
-    '11. It should work on holes in the array.': function() {
+    // refactored to preserve holes: 2/22/19
+    '11. It should preserve holes in the array.': function() {
       var holesArray = [0, , 2];
-      holesArray.copyWithin(0, 1);
-      eq(holesArray[0], undefined);
+      holesArray.myCopyWithin(0, 1);
+      eq(0 in holesArray, false);
     },
     // Original Test Modified
     '12. It should work generically on an object.': function() {
